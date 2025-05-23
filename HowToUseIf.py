@@ -84,3 +84,59 @@ def change_username():
     username = input()
 def display_username()
 username()
+
+#連想配列とは
+
+#pythonでは辞書のこと。名前がついていて取り出すことができる。
+original_array = [
+  { 'key': 'A', 'date': '2023/05/01', 'regiDate': '2023/04/25' },
+  { 'key': 'B', 'date': '2023/05/02', 'regiDate': '2023/04/26' },
+  { 'key': 'C', 'date': '2023/05/03', 'regiDate': '2023/04/27' },
+  { 'key': 'A', 'date': '2023/05/04', 'regiDate': '2023/04/28' }, # Aの新しいdate
+  { 'key': 'D', 'date': '2023/05/05', 'regiDate': '2023/04/29' },
+  { 'key': 'B', 'date': '2023/05/02', 'regiDate': '2023/04/30' }, # Bのdateは同じだがregiDateが新しい
+  { 'key': 'E', 'date': '2023/05/07', 'regiDate': '2023/05/01' },
+  { 'key': 'D', 'date': '2023/05/08', 'regiDate': '2023/05/02' }, # Dの新しいdate
+  { 'key': 'C', 'date': '2023/05/09', 'regiDate': '2023/05/03' }, # Cの新しいdate
+  { 'key': 'A', 'date': '2023/05/04', 'regiDate': '2023/05/04' }  # Aのdateは同じだがregiDateが新しい
+]
+
+def deduplicate_array_python(arr):
+    # 日付文字列を比較可能なdatetimeオブジェクトに変換するためのヘルパー関数
+    def to_datetime(date_str):
+        # datetimeオブジェクトは直接比較が可能
+        from datetime import datetime
+        return datetime.strptime(date_str, '%Y/%m/%d')
+
+    # keyをキーとし、最新の要素を値とする辞書を作成
+    latest_items = {}
+
+    for item in arr:
+        key = item['key']
+        current_date_obj = to_datetime(item['date'])
+        current_regi_date_obj = to_datetime(item['regiDate'])
+
+        if key not in latest_items:
+            # まだ辞書にこのkeyの要素がなければ、そのまま追加
+            latest_items[key] = item
+        else:
+            # 既に辞書にこのkeyの要素が存在する場合、日付を比較
+            existing_item = latest_items[key]
+            existing_date_obj = to_datetime(existing_item['date'])
+            existing_regi_date_obj = to_datetime(existing_item['regiDate'])
+
+            if current_date_obj > existing_date_obj:
+                # 現在のアイテムのdateが新しければ、置き換える
+                latest_items[key] = item
+            elif current_date_obj == existing_date_obj:
+                # dateが同じ場合はregiDateを比較
+                if current_regi_date_obj > existing_regi_date_obj:
+                    # 現在のアイテムのregiDateが新しければ、置き換える
+                    latest_items[key] = item
+    
+    # 辞書の値（最新の要素のリスト）を返す
+    return list(latest_items.values())
+
+deduplicated_array_py = deduplicate_array_python(original_array)
+for item in deduplicated_array_py:
+    print(item)
